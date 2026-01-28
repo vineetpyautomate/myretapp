@@ -161,12 +161,12 @@ if 'data_a' in st.session_state:
         
         raw_site_name = b[0]['site'] if b else "Script"
         clean_site_name = re.sub(r'[^\w\s-]', '', raw_site_name).strip().replace(' ', '_')
-        dynamic_filename = f"{clean_site_name}_complete.txt"
+        dynamic_filename = f"{clean_site_name}_RET_Script.txt"
         
         # Dictionary of parts to include
         active_parts = {
             "0": p0, "1": p1, "2": p2, "3": p3, "4": p4, 
-            "5": p5, "6": p6, "7": p7, "8": p8, "11": p11
+            "5": p5, "6": p6, "7": p7, "8": p8, "9": p9, "10": p10, "11": p11
         }
         
         final_list = []
@@ -182,6 +182,7 @@ if 'data_a' in st.session_state:
             file_name=dynamic_filename,
             mime="text/plain"
         )
+
 
 
 
