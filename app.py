@@ -10,12 +10,13 @@ FREQ_MAP = {"1": "ALPHA", "2": "BETA", "3": "GAMMA", "4": "DELTA", "5": "EPSILON
 st.set_page_config(layout="wide", page_title="Vineet Script Engine Web")
 
 # Custom CSS to make it look professional on 10-11 inch laptops
+# Custom CSS to make it look professional on 10-11 inch laptops
 st.markdown("""
     <style>
     .block-container { padding-top: 2rem; }
     .stButton>button { width: 100%; }
     </style>
-    """, unsafe_allow_name_allowed=True)
+    """, unsafe_allow_html=True) # Fixed parameter name here
 
 st.title("🚀 Script Engine Pro (Web Edition)")
 
