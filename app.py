@@ -77,9 +77,9 @@ def add_row():
 
 for idx, row in enumerate(st.session_state.rows):
     c1, c2, c3, c4, c5 = st.columns([2, 1.5, 0.3, 1.2, 0.4])
-    st.session_state.rows[idx]["site"] = c1.text_input("Site", value=row["site"], key=f"site_{idx}", label_visibility="collapsed" placeholder="SiteName")
+    st.session_state.rows[idx]["site"] = c1.text_input("Site", value=row["site"], key=f"site_{idx}", label_visibility="collapsed")
     st.session_state.rows[idx]["model"] = c2.selectbox("Model", model_opts, index=model_opts.index(row["model"]), key=f"mod_{idx}", label_visibility="collapsed")
-    st.session_state.rows[idx]["pos"] = c3.text_input("Pos", value=row["pos"], key=f"pos_{idx}", label_visibility="collapsed" placeholder="AntennaModel")
+    st.session_state.rows[idx]["pos"] = c3.text_input("Pos", value=row["pos"], key=f"pos_{idx}", label_visibility="collapsed")
     st.session_state.rows[idx]["dir"] = c4.selectbox("Dir", list(GREEK_DIRS.keys()), index=list(GREEK_DIRS.keys()).index(row["dir"]), key=f"dir_{idx}", label_visibility="collapsed")
     if c5.button("✖", key=f"del_{idx}"):
         st.session_state.rows.pop(idx); st.rerun()
@@ -161,6 +161,7 @@ if 'data_a' in st.session_state:
         
         final = "\n\n".join([f"#part{i}\n" + "\n".join(eval(f"p{i}")) for i in range(12)])
         st.download_button("Download Script", data=final, file_name="script_complete.txt")
+
 
 
 
