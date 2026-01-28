@@ -5,7 +5,7 @@ from io import BytesIO
 
 # --- GREEK & FREQUENCY MAPPING ---
 GREEK_DIRS = {"Alpha": "1", "Beta": "2", "Gamma": "3", "Delta": "4", "Epsilon": "5", "Zeta": "6"}
-FREQ_MAP = {"1": "ALPHA", "2": "BETA", "3": "GAMMA", "4": "DELTA", "5": "EPSILON", "6": "ZETA"}
+FREQ_MAP = {"1": "ALPHA", "2": "BETA", "3": "GAMMA", "4": "DELTA", "5": "EPSILON", "6": "ZETA", "7": "ETA", "8": "THETA", "9": "IOTA"}
 
 st.set_page_config(layout="wide", page_title="Script Engine Pro")
 
@@ -87,7 +87,7 @@ for idx, row in enumerate(st.session_state.rows):
 st.button("+ Add Row", on_click=add_row)
 
 # --- 2. INITIALIZATION ---
-if st.button("INITIALIZE BLOCKS", type="primary"):
+if st.button("INITIALIZE MOs", type="primary"):
     data_a, data_b = [], []
     curr_k, curr_n, curr_u = 1, 1, 1
     last_dir, last_pos = None, None
@@ -131,7 +131,7 @@ if 'data_a' in st.session_state:
     with col_b:
         st.markdown('<div class="block-label">BLOCK B: NAMES & ADDRESS</div>', unsafe_allow_html=True)
         for idx, row in enumerate(st.session_state.data_b):
-            cb1, cb2, cb3, cb4, cb5 = st.columns([1, 1.8, 1, 0.6, 2])
+            cb1, cb2, cb3, cb4, cb5 = st.columns([1.4, 1.8, 1, 0.6, 2])
             cb1.code(f"AUG={row['v']},ANU={row['k']},Retsubunit={row['t']}")
             st.session_state.data_b[idx]["names"] = cb2.multiselect(f"N_{idx}", name_opts, default=row['names'], key=f"bname_{idx}", label_visibility="collapsed")
             st.session_state.data_b[idx]["site"] = cb3.text_input(f"Si_{idx}", value=row['site'], key=f"bsite_{idx}", label_visibility="collapsed")
@@ -144,18 +144,20 @@ if 'data_a' in st.session_state:
 
     # --- SCRIPT GENERATION ---
     st.divider()
-    if st.button("🚀 GENERATE FULL SCRIPT (0-8)"):
+    if st.button("🚀 GENERATE FULL SCRIPT"):
         b, a = st.session_state.data_b, st.session_state.data_a
-        p0 = list(dict.fromkeys([f"cr AUG={r['v']}" for r in b]))
-        p1 = list(dict.fromkeys([f"cr AUG={r['v']},ANU={r['k']}" for r in b]))
-        p2 = [f"set AUG={r['v']},ANU={r['k']} rfPortref {r['src']}" for r in a]
-        p3 = [f"set AUG={r['v']},ANU={r['k']} uniqueid {r['extra']}" for r in a]
-        p4 = [f"set AUG={r['v']},ANU={r['k']} iuantdevicetype {r['type']}" for r in a]
-        p5 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']}{' name=' + ','.join(r['names']) if r['names'] else ''} site={r['site']}" for r in b]
-        p6 = [f"set V={r['v']},N={r['n']},U={r['u']} ref V={r['v']},K={r['k']},T={r['t']}" for r in b]
-        p7 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']} electricalantennatilt {r['tilt']}" for r in b]
-        p8 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']} userlabel {r['addr']}" for r in b]
+        p0 = list(dict.fromkeys([f"cr AntennaUnitGroup={r['v']}" for r in b]))
+        p1 = list(dict.fromkeys([f"cr AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']}" for r in b]))
+        p2 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']} rfPortref {r['src']}" for r in a]
+        p3 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']} uniqueid {r['extra']}" for r in a]
+        p4 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']} iuantdevicetype {r['type']}" for r in a]
+        p5 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}{' name=' + ','.join(r['names']) if r['names'] else ''} for r in b]
+        p6 = [f"cr AntennaUnitGroup={r['v']},AntennaUnit={r['n']},AntennaSubunit={r['u']} for r in b]
+        p7 = [f"set AntennaUnitGroup={r['v']},AntennaUnit={r['n']},AntennaSubunit={r['u']} retsubunitref AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}" for r in b]
+        p8 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} electricalantennatilt {r['tilt']}" for r in b]
+        p9 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} userlabel {r['addr']}" for r in b]
         
-        final = "\n\n".join([f"#part{i}\n" + "\n".join(eval(f"p{i}")) for i in range(9)])
+        final = "\n\n".join([f"#part{i}\n" + "\n".join(eval(f"p{i}")) for i in range(10)])
         st.download_button("Download Script", data=final, file_name="script_complete.txt")
+
 
