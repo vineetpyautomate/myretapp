@@ -67,7 +67,7 @@ with st.sidebar:
     else: st.stop()
 
 # --- 1. COORDINATE INPUT ---
-st.markdown('<div class="block-label">1. INPUT COORDINATES</div>', unsafe_allow_html=True)
+st.markdown('<div class="block-label">1. ANTENNA INPUTs</div>', unsafe_allow_html=True)
 if 'rows' not in st.session_state:
     st.session_state.rows = [{"site": "", "model": model_opts[0], "pos": "", "dir": "Alpha"}]
 
@@ -76,15 +76,15 @@ def add_row():
     st.session_state.rows.append({"site": last_site, "model": model_opts[0], "pos": "", "dir": "Alpha"})
 
 for idx, row in enumerate(st.session_state.rows):
-    c1, c2, c3, c4, c5 = st.columns([2, 2.5, 0.8, 1.2, 0.4])
-    st.session_state.rows[idx]["site"] = c1.text_input("Site", value=row["site"], key=f"site_{idx}", label_visibility="collapsed")
+    c1, c2, c3, c4, c5 = st.columns([2, 1.5, 0.3, 1.2, 0.4])
+    st.session_state.rows[idx]["site"] = c1.text_input("Site", value=row["site"], key=f"site_{idx}", label_visibility="collapsed" placeholder="SiteName")
     st.session_state.rows[idx]["model"] = c2.selectbox("Model", model_opts, index=model_opts.index(row["model"]), key=f"mod_{idx}", label_visibility="collapsed")
-    st.session_state.rows[idx]["pos"] = c3.text_input("Pos", value=row["pos"], key=f"pos_{idx}", label_visibility="collapsed")
+    st.session_state.rows[idx]["pos"] = c3.text_input("Pos", value=row["pos"], key=f"pos_{idx}", label_visibility="collapsed" placeholder="AntennaModel")
     st.session_state.rows[idx]["dir"] = c4.selectbox("Dir", list(GREEK_DIRS.keys()), index=list(GREEK_DIRS.keys()).index(row["dir"]), key=f"dir_{idx}", label_visibility="collapsed")
     if c5.button("✖", key=f"del_{idx}"):
         st.session_state.rows.pop(idx); st.rerun()
 
-st.button("+ Add Row", on_click=add_row)
+st.button("+ Add New", on_click=add_row)
 
 # --- 2. INITIALIZATION ---
 if st.button("INITIALIZE MOs", type="primary"):
@@ -131,11 +131,11 @@ if 'data_a' in st.session_state:
     with col_b:
         st.markdown('<div class="block-label">BLOCK B: NAMES & ADDRESS</div>', unsafe_allow_html=True)
         for idx, row in enumerate(st.session_state.data_b):
-            cb1, cb2, cb3, cb4, cb5 = st.columns([1.4, 1.8, 1, 0.6, 2])
+            cb1, cb2, cb3, cb4, cb5 = st.columns([1.4, 1.8, 1, 0.3, 2])
             cb1.code(f"AUG={row['v']},ANU={row['k']},Retsubunit={row['t']}")
             st.session_state.data_b[idx]["names"] = cb2.multiselect(f"N_{idx}", name_opts, default=row['names'], key=f"bname_{idx}", label_visibility="collapsed")
             st.session_state.data_b[idx]["site"] = cb3.text_input(f"Si_{idx}", value=row['site'], key=f"bsite_{idx}", label_visibility="collapsed")
-            st.session_state.data_b[idx]["tilt"] = cb4.text_input(f"Ti_{idx}", value=row['tilt'], key=f"btilt_{idx}", label_visibility="collapsed", placeholder="T")
+            st.session_state.data_b[idx]["tilt"] = cb4.text_input(f"Ti_{idx}", value=row['tilt'], key=f"btilt_{idx}", label_visibility="collapsed", placeholder="0")
             
             # LIVE PREVIEW ADDRESS
             current_addr = calculate_address(st.session_state.data_b[idx]["site"], st.session_state.data_b[idx]["names"])
@@ -151,14 +151,17 @@ if 'data_a' in st.session_state:
         p2 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']} rfPortref {r['src']}" for r in a]
         p3 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']} uniqueid {r['extra']}" for r in a]
         p4 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']} iuantdevicetype {r['type']}" for r in a]
-        p5 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}{' name=' + ','.join(r['names']) if r['names'] else ''}" for r in b]
-        p6 = [f"cr AntennaUnitGroup={r['v']},AntennaUnit={r['n']},AntennaSubunit={r['u']}" for r in b]
-        p7 = [f"set AntennaUnitGroup={r['v']},AntennaUnit={r['n']},AntennaSubunit={r['u']} retsubunitref AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}" for r in b]
-        p8 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} electricalantennatilt {r['tilt']}" for r in b]
-        p9 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} userlabel {r['addr']}" for r in b]
+        p5 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}{' iuantSectorId ' + ','.join(r['names']) if r['names'] else ''}" for r in b]
+        p6 = [f"cr AntennaUnitGroup={r['v']},AntennaUnit={r['n']}" for r in b]
+        p7 = [f"cr AntennaUnitGroup={r['v']},AntennaUnit={r['n']},AntennaSubunit={r['u']}" for r in b]
+        p8 = [f"set AntennaUnitGroup={r['v']},AntennaUnit={r['n']},AntennaSubunit={r['u']} retsubunitref AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}" for r in b]
+        p9 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} electricalantennatilt {r['tilt']}" for r in b]
+        p10 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} userlabel {r['addr']}" for r in b]
+        p11 = [f"set Vineet={r['v']},Kumar={r['k']},Thakur={r['t']} iuantBaseStationId {r['site']}" for r in b]
         
-        final = "\n\n".join([f"#part{i}\n" + "\n".join(eval(f"p{i}")) for i in range(10)])
+        final = "\n\n".join([f"#part{i}\n" + "\n".join(eval(f"p{i}")) for i in range(12)])
         st.download_button("Download Script", data=final, file_name="script_complete.txt")
+
 
 
 
