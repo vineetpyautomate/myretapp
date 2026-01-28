@@ -135,11 +135,36 @@ if 'data_a' in st.session_state:
             c[3].text(st.session_state.data_b[idx]["addr"])
 
     # --- FINAL GENERATION ---
+    # --- FINAL GENERATION (Parts 0-8) ---
     if st.button("DOWNLOAD SCRIPT"):
+        # Unique Headers
         p0 = list(dict.fromkeys([f"cr Vineet={r['v']}" for r in st.session_state.data_b]))
+        p1 = list(dict.fromkeys([f"cr Vineet={r['v']},Kumar={r['k']}" for r in st.session_state.data_b]))
+        
+        # Attribute Sets
         p2 = [f"set Vineet={r['v']},Kumar={r['k']} source={r['src']}" for r in st.session_state.data_a]
+        p3 = [f"set Vineet={r['v']},Kumar={r['k']} extra={r['extra']}" for r in st.session_state.data_a]
+        p4 = [f"set Vineet={r['v']},Kumar={r['k']} type={r['type']}" for r in st.session_state.data_a]
+        
+        # Name/Site Sets
         p5 = [f"set Vineet={r['v']},Kumar={r['k']},Thakur={r['t']}{' name=' + ';'.join(r['names']) if r['names'] else ''} site={r['site']}" for r in st.session_state.data_b]
+        
+        # References and Details
+        p6 = [f"set V={r['v']},N={r['n']},U={r['u']} ref V={r['v']},K={r['k']},T={r['t']}" for r in st.session_state.data_b]
+        p7 = [f"set Vineet={r['v']},Kumar={r['k']},Thakur={r['t']} tilt={r['tilt']}" for r in st.session_state.data_b]
         p8 = [f"set Vineet={r['v']},Kumar={r['k']},Thakur={r['t']} address={r['addr']}" for r in st.session_state.data_b]
         
-        final_txt = "#part0\n" + "\n".join(p0) + "\n\n#part2\n" + "\n".join(p2) + "\n\n#part5\n" + "\n".join(p5) + "\n\n#part8\n" + "\n".join(p8)
-        st.download_button("Download TXT File", data=final_txt, file_name="vineet_script.txt")
+        # Combine everything
+        final_txt = (
+            "#part0\n" + "\n".join(p0) + "\n\n" +
+            "#part1\n" + "\n".join(p1) + "\n\n" +
+            "#part2\n" + "\n".join(p2) + "\n\n" +
+            "#part3\n" + "\n".join(p3) + "\n\n" +
+            "#part4\n" + "\n".join(p4) + "\n\n" +
+            "#part5\n" + "\n".join(p5) + "\n\n" +
+            "#part6\n" + "\n".join(p6) + "\n\n" +
+            "#part7\n" + "\n".join(p7) + "\n\n" +
+            "#part8\n" + "\n".join(p8)
+        )
+        
+        st.download_button("Download TXT File", data=final_txt, file_name="vineet_script_complete.txt")
