@@ -17,7 +17,7 @@ st.markdown("""
         font-family: 'Segoe UI', sans-serif;
     }
     .block-container { padding-top: 1rem; }
-    .stSelectbox, .stTextInput, .stMultiSelect { margin-bottom: -8px; }
+    .stSelectbox, .stTextInput, .stMultiSelect { margin-bottom: -10px; }
     .main-header {
         background-color: #2c3e50; color: white; padding: 6px;
         border-radius: 4px; margin-bottom: 12px; font-weight: bold;
@@ -28,10 +28,11 @@ st.markdown("""
         font-weight: bold; color: #2f3542; margin-bottom: 8px;
         border-left: 4px solid #3498db; font-size: 0.85rem;
     }
-    /* Shrink the height of text inputs to fit more rows */
-    div[data-baseweb="input"] { height: 28px !important; }
+    div[data-baseweb="input"] { height: 26px !important; }
+    /* Ensure multi-select tags don't make the row too tall */
+    .stMultiSelect div[role="listbox"] { min-height: 26px !important; }
     </style>
-    <div class="main-header">PRO SCRIPT GENERATOR - OPTIMIZED VIEW</div>
+    <div class="main-header">PRO SCRIPT GENERATOR - ASYMMETRIC VIEW</div>
     """, unsafe_allow_html=True)
 
 def calculate_address(site_name, selected_names):
@@ -52,9 +53,9 @@ def calculate_address(site_name, selected_names):
         return f"{site_name}_{greek_name}_{'_'.join(sorted_f)}"
     return site_name
 
-# --- SIDEBAR: CONFIG MANAGER ---
+# --- SIDEBAR ---
 with st.sidebar:
-    st.header("⚙ Config Manager")
+    st.header("⚙ Config")
     uploaded_file = st.file_uploader("Upload config.xlsx", type="xlsx")
     if uploaded_file:
         models_df = pd.read_excel(uploaded_file, sheet_name="Models")
@@ -63,9 +64,7 @@ with st.sidebar:
         model_opts = models_df["ModelName"].astype(str).tolist()
         name_opts = names_df["PersonName"].astype(str).tolist()
         source_opts = sources_df["VolName"].astype(str).tolist()
-    else:
-        st.warning("Please upload config.xlsx.")
-        st.stop()
+    else: st.stop()
 
 # --- 1. COORDINATE INPUT ---
 st.markdown('<div class="block-label">1. INPUT COORDINATES</div>', unsafe_allow_html=True)
@@ -114,47 +113,48 @@ if st.button("INITIALIZE BLOCKS", type="primary"):
                 curr_u += 1; curr_k += 1
     st.session_state.data_a, st.session_state.data_b = data_a, data_b
 
-# --- 3. WORKSPACE ---
+# --- 3. WORKSPACE (ASYMMETRIC) ---
 if 'data_a' in st.session_state:
     st.divider()
-    col_a, col_b = st.columns(2)
+    # CHANGE RATIO HERE: 0.35 for Block A, 0.65 for Block B
+    col_a, col_b = st.columns([0.35, 0.65]) 
+    
     with col_a:
         st.markdown('<div class="block-label">BLOCK A: SOURCES</div>', unsafe_allow_html=True)
         for idx, row in enumerate(st.session_state.data_a):
-            c1, c2, c3, c4 = st.columns([1, 0.8, 1, 0.4]) # Reduced sizes for Src, Extra, Type
-            c1.code(f"V{row['v']}K{row['k']}")
-            st.session_state.data_a[idx]["src"] = c2.selectbox(f"S_{idx}", source_opts, index=source_opts.index(row['src']), key=f"asrc_{idx}", label_visibility="collapsed")
-            st.session_state.data_a[idx]["extra"] = c3.text_input(f"E_{idx}", value=row['extra'], key=f"aex_{idx}", label_visibility="collapsed", placeholder="Extra")
-            c4.text_input(f"T_{idx}", value=row['type'], key=f"atyp_{idx}", label_visibility="collapsed", disabled=True)
+            ca1, ca2, ca3, ca4 = st.columns([1, 1, 1, 0.5])
+            ca1.code(f"AUG={row['v']},ANU={row['k']}")
+            st.session_state.data_a[idx]["src"] = ca2.selectbox(f"S_{idx}", source_opts, index=source_opts.index(row['src']), key=f"asrc_{idx}", label_visibility="collapsed")
+            st.session_state.data_a[idx]["extra"] = ca3.text_input(f"E_{idx}", value=row['extra'], key=f"aex_{idx}", label_visibility="collapsed")
+            ca4.text_input(f"T_{idx}", value=row['type'], key=f"atyp_{idx}", label_visibility="collapsed", disabled=True)
 
     with col_b:
         st.markdown('<div class="block-label">BLOCK B: NAMES & ADDRESS</div>', unsafe_allow_html=True)
         for idx, row in enumerate(st.session_state.data_b):
-            c1, c2, c3, c4, c5 = st.columns([1, 1.2, 0.8, 0.4, 1.4]) # Reduced Tilt (0.4) and Name widths
-            c1.code(f"V{row['v']}K{row['k']}T{row['t']}")
-            st.session_state.data_b[idx]["names"] = c2.multiselect(f"N_{idx}", name_opts, default=row['names'], key=f"bname_{idx}", label_visibility="collapsed")
-            st.session_state.data_b[idx]["site"] = c3.text_input(f"Si_{idx}", value=row['site'], key=f"bsite_{idx}", label_visibility="collapsed")
-            st.session_state.data_b[idx]["tilt"] = c4.text_input(f"Ti_{idx}", value=row['tilt'], key=f"btilt_{idx}", label_visibility="collapsed", placeholder="Tilt")
+            cb1, cb2, cb3, cb4, cb5 = st.columns([1, 1.8, 1, 0.6, 2])
+            cb1.code(f"AUG={row['v']},ANU={row['k']},Retsubunit={row['t']}")
+            st.session_state.data_b[idx]["names"] = cb2.multiselect(f"N_{idx}", name_opts, default=row['names'], key=f"bname_{idx}", label_visibility="collapsed")
+            st.session_state.data_b[idx]["site"] = cb3.text_input(f"Si_{idx}", value=row['site'], key=f"bsite_{idx}", label_visibility="collapsed")
+            st.session_state.data_b[idx]["tilt"] = cb4.text_input(f"Ti_{idx}", value=row['tilt'], key=f"btilt_{idx}", label_visibility="collapsed", placeholder="T")
             
-            # LIVE PREVIEW LOGIC
-            # This ensures the box on screen matches the regex logic instantly
+            # LIVE PREVIEW ADDRESS
             current_addr = calculate_address(st.session_state.data_b[idx]["site"], st.session_state.data_b[idx]["names"])
             st.session_state.data_b[idx]["addr"] = current_addr
-            c5.text_input(f"A_{idx}", value=current_addr, key=f"baddr_{idx}", label_visibility="collapsed")
+            cb5.text_input(f"A_{idx}", value=current_addr, key=f"baddr_{idx}", label_visibility="collapsed")
 
-    # --- GENERATION ---
+    # --- SCRIPT GENERATION ---
     st.divider()
     if st.button("🚀 GENERATE FULL SCRIPT (0-8)"):
         b, a = st.session_state.data_b, st.session_state.data_a
-        p0 = list(dict.fromkeys([f"cr Vineet={r['v']}" for r in b]))
-        p1 = list(dict.fromkeys([f"cr Vineet={r['v']},Kumar={r['k']}" for r in b]))
-        p2 = [f"set Vineet={r['v']},Kumar={r['k']} source={r['src']}" for r in a]
-        p3 = [f"set Vineet={r['v']},Kumar={r['k']} extra={r['extra']}" for r in a]
-        p4 = [f"set Vineet={r['v']},Kumar={r['k']} type={r['type']}" for r in a]
-        p5 = [f"set Vineet={r['v']},Kumar={r['k']},Thakur={r['t']}{' name=' + ';'.join(r['names']) if r['names'] else ''} site={r['site']}" for r in b]
+        p0 = list(dict.fromkeys([f"cr AUG={r['v']}" for r in b]))
+        p1 = list(dict.fromkeys([f"cr AUG={r['v']},ANU={r['k']}" for r in b]))
+        p2 = [f"set AUG={r['v']},ANU={r['k']} rfPortref {r['src']}" for r in a]
+        p3 = [f"set AUG={r['v']},ANU={r['k']} uniqueid {r['extra']}" for r in a]
+        p4 = [f"set AUG={r['v']},ANU={r['k']} iuantdevicetype {r['type']}" for r in a]
+        p5 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']}{' iuanySectorId=' + ','.join(r['names']) if r['names'] else ''}]
         p6 = [f"set V={r['v']},N={r['n']},U={r['u']} ref V={r['v']},K={r['k']},T={r['t']}" for r in b]
-        p7 = [f"set Vineet={r['v']},Kumar={r['k']},Thakur={r['t']} tilt={r['tilt']}" for r in b]
-        p8 = [f"set Vineet={r['v']},Kumar={r['k']},Thakur={r['t']} address={r['addr']}" for r in b]
+        p7 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']} electricalantennatilt {r['tilt']}" for r in b]
+        p8 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']} userlabel {r['addr']}" for r in b]
         
         final = "\n\n".join([f"#part{i}\n" + "\n".join(eval(f"p{i}")) for i in range(9)])
         st.download_button("Download Script", data=final, file_name="script_complete.txt")
