@@ -151,7 +151,7 @@ if 'data_a' in st.session_state:
         p2 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']} rfPortref {r['src']}" for r in a]
         p3 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']} uniqueid {r['extra']}" for r in a]
         p4 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']} iuantdevicetype {r['type']}" for r in a]
-        p5 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}{' name=' + ','.join(r['names']) if r['names'] else ''} for r in b]
+        p5 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}{' name=' + ','.join(r['names']) if r['names'] else ''}" for r in b]
         p6 = [f"cr AntennaUnitGroup={r['v']},AntennaUnit={r['n']},AntennaSubunit={r['u']} for r in b]
         p7 = [f"set AntennaUnitGroup={r['v']},AntennaUnit={r['n']},AntennaSubunit={r['u']} retsubunitref AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}" for r in b]
         p8 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} electricalantennatilt {r['tilt']}" for r in b]
@@ -159,5 +159,6 @@ if 'data_a' in st.session_state:
         
         final = "\n\n".join([f"#part{i}\n" + "\n".join(eval(f"p{i}")) for i in range(10)])
         st.download_button("Download Script", data=final, file_name="script_complete.txt")
+
 
 
