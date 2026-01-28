@@ -120,7 +120,7 @@ if 'data_a' in st.session_state:
     col_a, col_b = st.columns([0.35, 0.65]) 
     
     with col_a:
-        st.markdown('<div class="block-label">BLOCK A: SOURCES</div>', unsafe_allow_html=True)
+        st.markdown('<div class="block-label">BLOCK A: RET POWER & UNIQUE_ID</div>', unsafe_allow_html=True)
         for idx, row in enumerate(st.session_state.data_a):
             ca1, ca2, ca3, ca4 = st.columns([1, 1, 1, 0.5])
             ca1.code(f"AUG={row['v']},ANU={row['k']}")
@@ -129,7 +129,7 @@ if 'data_a' in st.session_state:
             ca4.text_input(f"T_{idx}", value=row['type'], key=f"atyp_{idx}", label_visibility="collapsed", disabled=True)
 
     with col_b:
-        st.markdown('<div class="block-label">BLOCK B: NAMES & ADDRESS</div>', unsafe_allow_html=True)
+        st.markdown('<div class="block-label">BLOCK B: USER-LABEL & TILT</div>', unsafe_allow_html=True)
         for idx, row in enumerate(st.session_state.data_b):
             cb1, cb2, cb3, cb4, cb5 = st.columns([1.4, 1.8, 1, 0.3, 2])
             cb1.code(f"AUG={row['v']},ANU={row['k']},Retsubunit={row['t']}")
@@ -157,10 +157,32 @@ if 'data_a' in st.session_state:
         p8 = [f"set AntennaUnitGroup={r['v']},AntennaUnit={r['n']},AntennaSubunit={r['u']} retsubunitref AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']}" for r in b]
         p9 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} electricalantennatilt {r['tilt']}" for r in b]
         p10 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} userlabel {r['addr']}" for r in b]
-        p11 = [f"set Vineet={r['v']},Kumar={r['k']},Thakur={r['t']} iuantBaseStationId {r['site']}" for r in b]
+        p11 = [f"set AntennaUnitGroup={r['v']},AntennaNearUnit={r['k']},Retsubunit={r['t']} iuantBaseStationId {r['site']}" for r in b]
         
-        final = "\n\n".join([f"#part{i}\n" + "\n".join(eval(f"p{i}")) for i in range(12)])
-        st.download_button("Download Script", data=final, file_name="script_complete.txt")
+        raw_site_name = b[0]['site'] if b else "Script"
+        clean_site_name = re.sub(r'[^\w\s-]', '', raw_site_name).strip().replace(' ', '_')
+        dynamic_filename = f"{clean_site_name}_complete.txt"
+        
+        # Dictionary of parts to include
+        active_parts = {
+            "0": p0, "1": p1, "2": p2, "3": p3, "4": p4, 
+            "5": p5, "6": p6, "7": p7, "8": p8, "11": p11
+        }
+        
+        final_list = []
+        for header, content in active_parts.items():
+            final_list.append(f"#part{header}\n" + "\n".join(content))
+        
+        final = "\n\n".join(final_list)
+        
+        # Use the dynamic_filename here
+        st.download_button(
+            label="Download Script", 
+            data=final, 
+            file_name=dynamic_filename,
+            mime="text/plain"
+        )
+
 
 
 
