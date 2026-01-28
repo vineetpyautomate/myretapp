@@ -151,10 +151,11 @@ if 'data_a' in st.session_state:
         p2 = [f"set AUG={r['v']},ANU={r['k']} rfPortref {r['src']}" for r in a]
         p3 = [f"set AUG={r['v']},ANU={r['k']} uniqueid {r['extra']}" for r in a]
         p4 = [f"set AUG={r['v']},ANU={r['k']} iuantdevicetype {r['type']}" for r in a]
-        p5 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']}{' iuanySectorId=' + ','.join(r['names']) if r['names'] else ''}]
+        p5 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']}{' name=' + ','.join(r['names']) if r['names'] else ''} site={r['site']}" for r in b]
         p6 = [f"set V={r['v']},N={r['n']},U={r['u']} ref V={r['v']},K={r['k']},T={r['t']}" for r in b]
         p7 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']} electricalantennatilt {r['tilt']}" for r in b]
         p8 = [f"set AUG={r['v']},ANU={r['k']},Retsubunit={r['t']} userlabel {r['addr']}" for r in b]
         
         final = "\n\n".join([f"#part{i}\n" + "\n".join(eval(f"p{i}")) for i in range(9)])
         st.download_button("Download Script", data=final, file_name="script_complete.txt")
+
