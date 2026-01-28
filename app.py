@@ -17,19 +17,21 @@ st.markdown("""
         font-family: 'Segoe UI', sans-serif;
     }
     .block-container { padding-top: 1rem; }
-    .stSelectbox, .stTextInput, .stMultiSelect { margin-bottom: -5px; }
+    .stSelectbox, .stTextInput, .stMultiSelect { margin-bottom: -8px; }
     .main-header {
-        background-color: #2c3e50; color: white; padding: 8px;
-        border-radius: 4px; margin-bottom: 15px; font-weight: bold;
-        text-align: center; font-size: 1rem;
+        background-color: #2c3e50; color: white; padding: 6px;
+        border-radius: 4px; margin-bottom: 12px; font-weight: bold;
+        text-align: center; font-size: 0.95rem;
     }
     .block-label {
-        background-color: #f1f2f6; padding: 5px; border-radius: 3px;
-        font-weight: bold; color: #2f3542; margin-bottom: 10px;
-        border-left: 4px solid #3498db;
+        background-color: #f1f2f6; padding: 4px; border-radius: 3px;
+        font-weight: bold; color: #2f3542; margin-bottom: 8px;
+        border-left: 4px solid #3498db; font-size: 0.85rem;
     }
+    /* Shrink the height of text inputs to fit more rows */
+    div[data-baseweb="input"] { height: 28px !important; }
     </style>
-    <div class="main-header">PRO SCRIPT GENERATOR - RESTORED FULL VIEW</div>
+    <div class="main-header">PRO SCRIPT GENERATOR - OPTIMIZED VIEW</div>
     """, unsafe_allow_html=True)
 
 def calculate_address(site_name, selected_names):
@@ -50,7 +52,7 @@ def calculate_address(site_name, selected_names):
         return f"{site_name}_{greek_name}_{'_'.join(sorted_f)}"
     return site_name
 
-# --- SIDEBAR: DATA SOURCE ---
+# --- SIDEBAR: CONFIG MANAGER ---
 with st.sidebar:
     st.header("⚙ Config Manager")
     uploaded_file = st.file_uploader("Upload config.xlsx", type="xlsx")
@@ -75,7 +77,7 @@ def add_row():
     st.session_state.rows.append({"site": last_site, "model": model_opts[0], "pos": "", "dir": "Alpha"})
 
 for idx, row in enumerate(st.session_state.rows):
-    c1, c2, c3, c4, c5 = st.columns([2, 2.5, 1, 1.5, 0.5])
+    c1, c2, c3, c4, c5 = st.columns([2, 2.5, 0.8, 1.2, 0.4])
     st.session_state.rows[idx]["site"] = c1.text_input("Site", value=row["site"], key=f"site_{idx}", label_visibility="collapsed")
     st.session_state.rows[idx]["model"] = c2.selectbox("Model", model_opts, index=model_opts.index(row["model"]), key=f"mod_{idx}", label_visibility="collapsed")
     st.session_state.rows[idx]["pos"] = c3.text_input("Pos", value=row["pos"], key=f"pos_{idx}", label_visibility="collapsed")
@@ -119,7 +121,7 @@ if 'data_a' in st.session_state:
     with col_a:
         st.markdown('<div class="block-label">BLOCK A: SOURCES</div>', unsafe_allow_html=True)
         for idx, row in enumerate(st.session_state.data_a):
-            c1, c2, c3, c4 = st.columns([1, 1.2, 1.2, 0.6])
+            c1, c2, c3, c4 = st.columns([1, 0.8, 1, 0.4]) # Reduced sizes for Src, Extra, Type
             c1.code(f"V{row['v']}K{row['k']}")
             st.session_state.data_a[idx]["src"] = c2.selectbox(f"S_{idx}", source_opts, index=source_opts.index(row['src']), key=f"asrc_{idx}", label_visibility="collapsed")
             st.session_state.data_a[idx]["extra"] = c3.text_input(f"E_{idx}", value=row['extra'], key=f"aex_{idx}", label_visibility="collapsed", placeholder="Extra")
@@ -128,16 +130,17 @@ if 'data_a' in st.session_state:
     with col_b:
         st.markdown('<div class="block-label">BLOCK B: NAMES & ADDRESS</div>', unsafe_allow_html=True)
         for idx, row in enumerate(st.session_state.data_b):
-            c1, c2, c3, c4, c5 = st.columns([1, 1.5, 0.8, 0.8, 1.5])
+            c1, c2, c3, c4, c5 = st.columns([1, 1.2, 0.8, 0.4, 1.4]) # Reduced Tilt (0.4) and Name widths
             c1.code(f"V{row['v']}K{row['k']}T{row['t']}")
             st.session_state.data_b[idx]["names"] = c2.multiselect(f"N_{idx}", name_opts, default=row['names'], key=f"bname_{idx}", label_visibility="collapsed")
             st.session_state.data_b[idx]["site"] = c3.text_input(f"Si_{idx}", value=row['site'], key=f"bsite_{idx}", label_visibility="collapsed")
             st.session_state.data_b[idx]["tilt"] = c4.text_input(f"Ti_{idx}", value=row['tilt'], key=f"btilt_{idx}", label_visibility="collapsed", placeholder="Tilt")
             
-            # Auto Address Logic
-            new_addr = calculate_address(st.session_state.data_b[idx]["site"], st.session_state.data_b[idx]["names"])
-            st.session_state.data_b[idx]["addr"] = new_addr
-            c5.text_input(f"A_{idx}", value=new_addr, key=f"baddr_{idx}", label_visibility="collapsed")
+            # LIVE PREVIEW LOGIC
+            # This ensures the box on screen matches the regex logic instantly
+            current_addr = calculate_address(st.session_state.data_b[idx]["site"], st.session_state.data_b[idx]["names"])
+            st.session_state.data_b[idx]["addr"] = current_addr
+            c5.text_input(f"A_{idx}", value=current_addr, key=f"baddr_{idx}", label_visibility="collapsed")
 
     # --- GENERATION ---
     st.divider()
