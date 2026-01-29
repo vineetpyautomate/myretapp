@@ -4,7 +4,7 @@ import re
 from io import BytesIO
 
 # --- GREEK & FREQUENCY MAPPING ---
-GREEK_DIRS = {"Alpha": "1", "Beta": "2", "Gamma": "3", "Delta": "4", "Epsilon": "5", "Zeta": "6"}
+GREEK_DIRS = {"Alpha": "1", "Beta": "2", "Gamma": "3", "Delta": "4", "Epsilon": "5", "Zeta": "6", "Eta": "7", "Theta": "8", "Iota": "9"}
 FREQ_MAP = {"1": "ALPHA", "2": "BETA", "3": "GAMMA", "4": "DELTA", "5": "EPSILON", "6": "ZETA", "7": "ETA", "8": "THETA", "9": "IOTA"}
 
 st.set_page_config(layout="wide", page_title="Script Engine Pro")
@@ -182,6 +182,7 @@ if 'data_a' in st.session_state:
             file_name=dynamic_filename,
             mime="text/plain"
         )
+
 
 
 
